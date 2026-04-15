@@ -42,6 +42,11 @@ func main() {
 	} else {
 		fmt.Fprintln(os.Stderr, "  auth log: journald fallback")
 	}
+	if fw := firewall.Detect(); fw != nil {
+		fmt.Fprintf(os.Stderr, "  firewall: %s\n", fw.Name())
+	} else {
+		fmt.Fprintln(os.Stderr, "  firewall: none detected")
+	}
 
 	app, err := ui.New(st, g, time.Duration(cfg.RefreshInterval)*time.Second)
 	if err != nil {
