@@ -26,6 +26,11 @@ var (
 	styleDim     = tcell.StyleDefault.Foreground(tcell.ColorGray)
 )
 
+const (
+	focusIPs    = 0
+	focusEvents = 1
+)
+
 // App is the main TUI application.
 type App struct {
 	screen       tcell.Screen
@@ -34,6 +39,7 @@ type App struct {
 	interval     time.Duration
 	authLog      *widgets.ScrollText
 	blockedTable *widgets.Table
+	focused      int // focusIPs or focusEvents
 	quit         chan struct{}
 }
 
@@ -103,16 +109,44 @@ func (a *App) Run() {
 					a.screen.Fini()
 					close(a.quit)
 					return
+				case e.Key() == tcell.KeyTab:
+					if a.focused == focusIPs {
+						a.focused = focusEvents
+					} else {
+						a.focused = focusIPs
+					}
+					a.draw()
 				case e.Key() == tcell.KeyUp:
-					a.blockedTable.ScrollUp()
+					w, h := a.screen.Size()
+					g := Recalculate(w, h)
+					if a.focused == focusEvents {
+						a.authLog.ScrollUp(g.MainLower.H - 2)
+					} else {
+						a.blockedTable.ScrollUp()
+					}
 					a.draw()
 				case e.Key() == tcell.KeyDown:
 					w, h := a.screen.Size()
 					g := Recalculate(w, h)
-					a.blockedTable.ScrollDown(g.MainUpper.H - 4)
+					if a.focused == focusEvents {
+						a.authLog.ScrollDown()
+					} else {
+						a.blockedTable.ScrollDown(g.MainUpper.H - 4)
+					}
 					a.draw()
 				case e.Key() == tcell.KeyHome:
-					a.blockedTable.Scroll = 0
+					w, h := a.screen.Size()
+					g := Recalculate(w, h)
+					if a.focused == focusEvents {
+						a.authLog.ScrollToTop(g.MainLower.H - 2)
+					} else {
+						a.blockedTable.Scroll = 0
+					}
+					a.draw()
+				case e.Key() == tcell.KeyEnd:
+					if a.focused == focusEvents {
+						a.authLog.ScrollToBottom()
+					}
 					a.draw()
 				case e.Key() == tcell.KeyRune && e.Rune() == 'r':
 					a.draw()
@@ -217,7 +251,11 @@ func (a *App) drawTopSources(g Geometry) {
 
 func (a *App) drawBlockedIPs(g Geometry) {
 	r := g.MainUpper
-	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "BLOCKED IPs", styleDefault)
+	boxStyle := styleDefault
+	if a.focused == focusIPs {
+		boxStyle = styleHeader
+	}
+	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "BLOCKED IPs", boxStyle)
 
 	rows := make([][]string, 0, len(a.st.BlockedIPs))
 	for _, b := range a.st.BlockedIPs {
@@ -237,7 +275,11 @@ func (a *App) drawBlockedIPs(g Geometry) {
 
 func (a *App) drawAuthLog(g Geometry) {
 	r := g.MainLower
-	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "EVENTS", styleDefault)
+	evBoxStyle := styleDefault
+	if a.focused == focusEvents {
+		evBoxStyle = styleHeader
+	}
+	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "EVENTS", evBoxStyle)
 
 	// Rebuild scroll text from current auth events
 	a.authLog.Lines = a.authLog.Lines[:0]
@@ -268,7 +310,7 @@ func (a *App) drawAuthLog(g Geometry) {
 }
 
 func (a *App) drawFooter(g Geometry) {
-	footer := " [q]quit  [r]refresh  [↑↓]scroll IPs  [Home]top "
+	footer := " [q]quit  [r]refresh  [Tab]focus  [↑↓]scroll  [Home/End]top/bottom "
 	widgets.Pad(a.screen, 0, g.Footer.Y, g.Footer.W, styleDim)
 	widgets.Text(a.screen, 0, g.Footer.Y, footer, styleDim, g.Footer.W)
 }
