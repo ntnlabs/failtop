@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"failtop/config"
+	"failtop/sources/apache"
 	"failtop/sources/authlog"
 	"failtop/sources/fail2ban"
 	"failtop/sources/firewall"
@@ -47,6 +48,10 @@ func main() {
 	} else {
 		fmt.Fprintln(os.Stderr, "  firewall: none detected")
 	}
+	apacheLogs := apache.DetectLogFiles()
+	if len(apacheLogs) > 0 {
+		fmt.Fprintf(os.Stderr, "  apache: %d log file(s)\n", len(apacheLogs))
+	}
 
 	app, err := ui.New(st, g, time.Duration(cfg.RefreshInterval)*time.Second)
 	if err != nil {
@@ -61,6 +66,7 @@ func main() {
 	go firewall.Run(cfg.RefreshInterval, st, done)
 	go fail2ban.Run(cfg.RefreshInterval, st, done)
 	go nic.Run(cfg.Interface, cfg.PublicIPURL, st, done)
+	go apache.Run(st, done)
 
 	// Geo enrichment: periodically scan BlockedIPs for missing geo data.
 	// Lookups happen outside the lock to avoid blocking the UI render path.

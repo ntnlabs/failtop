@@ -247,8 +247,16 @@ func (a *App) drawAuthLog(g Geometry) {
 			style = styleOK
 		case "BAN":
 			style = styleBan
+		case "SCAN":
+			style = styleOK // red — suspicious path
 		default:
-			style = styleDefault
+			if len(ev.Type) == 3 && ev.Type[0] == '5' {
+				style = styleOK // red — server error
+			} else if len(ev.Type) == 3 && ev.Type[0] == '4' {
+				style = styleBan // yellow — client error
+			} else {
+				style = styleDefault
+			}
 		}
 		line := fmt.Sprintf("%s %-7s %-16s %s", ev.Time.Format("15:04:05"), ev.Type, ev.User, ev.IP)
 		a.authLog.Append(line, style)
