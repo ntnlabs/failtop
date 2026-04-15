@@ -111,6 +111,9 @@ func (a *App) Run() {
 					g := Recalculate(w, h)
 					a.blockedTable.ScrollDown(g.MainUpper.H - 4)
 					a.draw()
+				case e.Key() == tcell.KeyHome:
+					a.blockedTable.Scroll = 0
+					a.draw()
 				case e.Key() == tcell.KeyRune && e.Rune() == 'r':
 					a.draw()
 				}
@@ -265,7 +268,7 @@ func (a *App) drawAuthLog(g Geometry) {
 }
 
 func (a *App) drawFooter(g Geometry) {
-	footer := " [q]quit  [r]refresh  [↑↓]scroll IPs "
+	footer := " [q]quit  [r]refresh  [↑↓]scroll IPs  [Home]top "
 	widgets.Pad(a.screen, 0, g.Footer.Y, g.Footer.W, styleDim)
 	widgets.Text(a.screen, 0, g.Footer.Y, footer, styleDim, g.Footer.W)
 }
