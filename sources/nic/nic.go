@@ -85,7 +85,12 @@ func fetchPublicIP(url string) string {
 	if err != nil {
 		return ""
 	}
-	return strings.TrimSpace(string(body))
+	ip := strings.TrimSpace(string(body))
+	// Reject HTML or anything that doesn't look like an IP address
+	if strings.ContainsAny(ip, "<> \t\n") || len(ip) > 45 {
+		return ""
+	}
+	return ip
 }
 
 // localIP returns the first non-loopback IPv4 address for the named interface.
