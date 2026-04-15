@@ -116,3 +116,19 @@ func TestParseLine_Year(t *testing.T) {
 		t.Errorf("want year=%d, got %d", time.Now().Year(), ev.Time.Year())
 	}
 }
+
+func TestDetectPath_KnownPaths(t *testing.T) {
+	// DetectPath returns "" if none of the known paths exist
+	// (they won't in a test environment)
+	path := authlog.DetectPath("")
+	// Either a real path or "" — we just confirm it doesn't panic
+	_ = path
+}
+
+func TestDetectPath_Override(t *testing.T) {
+	// If the user provides an explicit path, return it unchanged
+	got := authlog.DetectPath("/custom/auth.log")
+	if got != "/custom/auth.log" {
+		t.Errorf("want /custom/auth.log, got %q", got)
+	}
+}
