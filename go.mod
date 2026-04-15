@@ -4,4 +4,17 @@ go 1.24.2
 
 require github.com/BurntSushi/toml v1.6.0
 
-require golang.org/x/sys v0.28.0
+require (
+	github.com/gdamore/tcell/v2 v2.13.8
+	github.com/oschwald/geoip2-golang v1.13.0
+	golang.org/x/sys v0.38.0
+)
+
+require (
+	github.com/gdamore/encoding v1.0.1 // indirect
+	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
+	github.com/oschwald/maxminddb-golang v1.13.0 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	golang.org/x/term v0.37.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
+)
