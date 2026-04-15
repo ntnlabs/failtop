@@ -48,6 +48,7 @@ func Run(authLogOverride string, st *state.AppState, done <-chan struct{}) {
 			if ev == nil {
 				continue
 			}
+			ev.Source = "ssh"
 			st.Lock()
 			st.AddAuthEvent(*ev)
 			switch ev.Type {

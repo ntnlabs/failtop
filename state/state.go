@@ -23,13 +23,14 @@ type BlockedIP struct {
 	SeenAt  time.Time
 }
 
-// AuthEvent is a single parsed line from auth.log.
+// AuthEvent is a single parsed line from auth.log or apache access log.
 type AuthEvent struct {
 	Time   time.Time
-	Type   string // "OK", "FAIL", "INVALID", "BAN"
+	Type   string // "OK", "FAIL", "INVALID", "BAN", "SCAN", "404", "500", ...
 	User   string
 	IP     string
-	Method string // populated for "OK" events (e.g. "publickey")
+	Method string // auth method for SSH ("publickey"), status code for HTTP
+	Source string // "ssh", "web"
 }
 
 // NICStats holds current interface throughput.

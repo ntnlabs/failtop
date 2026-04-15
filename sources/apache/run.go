@@ -33,6 +33,7 @@ func Run(st *state.AppState, done <-chan struct{}) {
 			if ev == nil {
 				continue
 			}
+			ev.Source = "web"
 			st.AddAuthEvent(*ev)
 			if ev.IP != "" {
 				st.AddOrUpdateBlockedIP(state.BlockedIP{

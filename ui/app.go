@@ -258,7 +258,7 @@ func (a *App) drawAuthLog(g Geometry) {
 				style = styleDefault
 			}
 		}
-		line := fmt.Sprintf("%s %-7s %-16s %s", ev.Time.Format("15:04:05"), ev.Type, ev.User, ev.IP)
+		line := fmt.Sprintf("%s %-4s %-7s %-16s %s", ev.Time.Format("15:04:05"), ev.Source, ev.Type, ev.User, ev.IP)
 		a.authLog.Append(line, style)
 	}
 	a.authLog.Draw(a.screen, r.X, r.Y, r.W, r.H)

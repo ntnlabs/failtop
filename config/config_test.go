@@ -13,7 +13,7 @@ func TestDefaults(t *testing.T) {
 	if cfg.RefreshInterval != 2 {
 		t.Errorf("want RefreshInterval=2, got %d", cfg.RefreshInterval)
 	}
-	if cfg.PublicIPURL != "https://api.ipify.org" {
+	if cfg.PublicIPURL != "https://ifconfig.me/ip" {
 		t.Errorf("want default public IP URL, got %q", cfg.PublicIPURL)
 	}
 }
