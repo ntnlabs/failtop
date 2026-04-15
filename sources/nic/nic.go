@@ -70,7 +70,13 @@ func fetchPublicIP(url string) string {
 		return ""
 	}
 	client := http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("Accept", "text/plain")
+	req.Header.Set("User-Agent", "failtop/1.0")
+	resp, err := client.Do(req)
 	if err != nil {
 		return ""
 	}
