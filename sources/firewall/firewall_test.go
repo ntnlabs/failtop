@@ -17,6 +17,9 @@ To                         Action      From
 22/tcp                     ALLOW IN    Anywhere
 80/tcp                     ALLOW IN    Anywhere
 443/tcp                    ALLOW IN    Anywhere
+185.220.101.45             DENY IN     Anywhere
+103.167.34.21              DENY IN     Anywhere
+45.155.205.233             REJECT IN   Anywhere
 `
 
 func TestParseUFWStats(t *testing.T) {
@@ -29,6 +32,9 @@ func TestParseUFWStats(t *testing.T) {
 	}
 	if stats.Rules != 3 {
 		t.Errorf("want Rules=3, got %d", stats.Rules)
+	}
+	if stats.Blocked != 3 {
+		t.Errorf("want Blocked=3, got %d", stats.Blocked)
 	}
 }
 
