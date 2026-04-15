@@ -28,7 +28,7 @@ func Defaults() *Config {
 		Interface:       "",
 		RefreshInterval: 2,
 		AuthLog:         "",
-		PublicIPURL:     "https://checkip.amazonaws.com",
+		PublicIPURL:     "https://ifconfig.me/ip",
 	}
 }
 

@@ -75,7 +75,7 @@ func fetchPublicIP(url string) string {
 		return ""
 	}
 	req.Header.Set("Accept", "text/plain")
-	req.Header.Set("User-Agent", "failtop/1.0")
+	req.Header.Set("User-Agent", "curl/7.68.0")
 	resp, err := client.Do(req)
 	if err != nil {
 		return ""
