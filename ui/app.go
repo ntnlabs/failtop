@@ -16,8 +16,8 @@ import (
 var (
 	styleDefault = tcell.StyleDefault
 	styleHeader  = tcell.StyleDefault.Foreground(tcell.ColorAqua).Bold(true)
-	styleFail    = tcell.StyleDefault.Foreground(tcell.ColorRed)
-	styleOK      = tcell.StyleDefault.Foreground(tcell.ColorGreen)
+	styleFail    = tcell.StyleDefault.Foreground(tcell.ColorGray)
+	styleOK      = tcell.StyleDefault.Foreground(tcell.ColorRed)
 	styleBan     = tcell.StyleDefault.Foreground(tcell.ColorYellow)
 	styleBar     = tcell.StyleDefault.Foreground(tcell.ColorRed)
 	styleAlt     = tcell.StyleDefault.Background(tcell.ColorDarkBlue)
@@ -234,7 +234,7 @@ func (a *App) drawBlockedIPs(g Geometry) {
 
 func (a *App) drawAuthLog(g Geometry) {
 	r := g.MainLower
-	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "AUTH LOG", styleDefault)
+	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "EVENTS", styleDefault)
 
 	// Rebuild scroll text from current auth events
 	a.authLog.Lines = a.authLog.Lines[:0]
