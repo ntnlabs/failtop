@@ -62,7 +62,8 @@ func main() {
 	go fail2ban.Run(cfg.RefreshInterval, st, done)
 	go nic.Run(cfg.Interface, cfg.PublicIPURL, st, done)
 
-	// Geo enrichment: periodically scan BlockedIPs for missing geo data
+	// Geo enrichment: periodically scan BlockedIPs for missing geo data.
+	// Lookups happen outside the lock to avoid blocking the UI render path.
 	go func() {
 		ticker := time.NewTicker(time.Duration(cfg.RefreshInterval) * time.Second)
 		defer ticker.Stop()
@@ -71,14 +72,39 @@ func main() {
 			case <-done:
 				return
 			case <-ticker.C:
+				st.RLock()
+				type pending struct {
+					idx int
+					ip  string
+				}
+				var work []pending
+				for i, b := range st.BlockedIPs {
+					if b.Country == "" {
+						work = append(work, pending{i, b.IP})
+					}
+				}
+				st.RUnlock()
+
+				if len(work) == 0 {
+					continue
+				}
+
+				type result struct {
+					idx int
+					r   geo.Result
+				}
+				results := make([]result, 0, len(work))
+				for _, w := range work {
+					results = append(results, result{w.idx, g.Lookup(w.ip)})
+				}
+
 				st.Lock()
-				for i := range st.BlockedIPs {
-					if st.BlockedIPs[i].Country == "" {
-						result := g.Lookup(st.BlockedIPs[i].IP)
-						st.BlockedIPs[i].Country = result.Country
-						st.BlockedIPs[i].City = result.City
-						st.BlockedIPs[i].ASN = result.ASN
-						st.BlockedIPs[i].Org = result.Org
+				for _, res := range results {
+					if res.idx < len(st.BlockedIPs) {
+						st.BlockedIPs[res.idx].Country = res.r.Country
+						st.BlockedIPs[res.idx].City = res.r.City
+						st.BlockedIPs[res.idx].ASN = res.r.ASN
+						st.BlockedIPs[res.idx].Org = res.r.Org
 					}
 				}
 				st.RecalcTopSources()
