@@ -90,7 +90,7 @@ type AppState struct {
 	TopSources         []GeoEntry
 	BlockRate          float64          // new unique IPs per minute
 	newBlocksSinceCalc int              // counter reset each minute
-	seenIPs            map[string]struct{} // all IPs ever seen, prevents re-counting evicted IPs
+	seenIPs            map[string]time.Time // first-seen time per IP, preserved across evictions
 
 	// Source availability — set during probe, shown in panels if false.
 	FirewallAvail bool
@@ -105,7 +105,7 @@ func New() *AppState {
 	return &AppState{
 		NICRxHist: make([]float64, 0, MaxNICHistory),
 		NICTxHist: make([]float64, 0, MaxNICHistory),
-		seenIPs:   make(map[string]struct{}),
+		seenIPs:   make(map[string]time.Time),
 	}
 }
 
@@ -133,9 +133,11 @@ func (s *AppState) AddOrUpdateBlockedIP(b BlockedIP) {
 			return
 		}
 	}
-	if _, seen := s.seenIPs[b.IP]; !seen {
-		s.seenIPs[b.IP] = struct{}{}
+	if firstSeen, seen := s.seenIPs[b.IP]; !seen {
+		s.seenIPs[b.IP] = b.SeenAt
 		s.newBlocksSinceCalc++
+	} else {
+		b.SeenAt = firstSeen // restore original first-seen time for evicted IPs
 	}
 	s.BlockedIPs = append([]BlockedIP{b}, s.BlockedIPs...)
 	// Keep list bounded to 500
