@@ -260,12 +260,11 @@ func (a *App) drawBlockedIPs(g Geometry) {
 
 	rows := make([][]string, 0, len(a.st.BlockedIPs))
 	for _, b := range a.st.BlockedIPs {
-		geoResult := a.geo.Lookup(b.IP)
 		rows = append(rows, []string{
 			b.IP,
-			strOr(geoResult.Country, b.Country),
-			strOr(geoResult.City, b.City),
-			strOr(shortOrg(geoResult.ASN, geoResult.Org), "-"),
+			strOr(b.Country, "-"),
+			strOr(b.City, "-"),
+			strOr(shortOrg(b.ASN, b.Org), "-"),
 			b.Source,
 			fmtAge(b.SeenAt),
 		})
