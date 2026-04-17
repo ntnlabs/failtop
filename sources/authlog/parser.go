@@ -25,6 +25,13 @@ var (
 	// "Accepted publickey for peter from 1.2.3.4 port 54321 ssh2"
 	reAccepted = regexp.MustCompile(
 		`(\w{3}\s+\d+\s+\d+:\d+:\d+)\s+\S+\s+sshd\[\d+\]:\s+Accepted (\S+) for (\S+) from (\S+)`)
+
+	// "Disconnected from user peter 1.2.3.4 port 54321"
+	// "Disconnected from 1.2.3.4 port 54321"
+	// "Connection closed by user peter 1.2.3.4 port 54321"
+	// "Connection closed by 1.2.3.4 port 54321"
+	reDisconnect = regexp.MustCompile(
+		`(\w{3}\s+\d+\s+\d+:\d+:\d+)\s+\S+\s+sshd\[\d+\]:\s+(?:Disconnected from|Connection closed by)(?: user (\S+))? (\S+) port`)
 )
 
 const timeLayout = "Jan _2 15:04:05 2006"
@@ -63,6 +70,18 @@ func ParseLine(line string) *state.AuthEvent {
 			Time: parseTime(m[1]),
 			Type: "INVALID",
 			User: m[2],
+			IP:   m[3],
+		}
+	}
+	if m := reDisconnect.FindStringSubmatch(line); m != nil {
+		user := m[2] // may be empty if no "user <name>" in the line
+		if user == "" {
+			user = "-"
+		}
+		return &state.AuthEvent{
+			Time: parseTime(m[1]),
+			Type: "BYE",
+			User: user,
 			IP:   m[3],
 		}
 	}

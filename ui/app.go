@@ -292,6 +292,8 @@ func (a *App) drawAuthLog(g Geometry) {
 			style = styleOK
 		case "BAN":
 			style = styleBan
+		case "BYE":
+			style = styleDim
 		case "SCAN":
 			style = styleOK // red — suspicious path
 		default:

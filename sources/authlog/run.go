@@ -63,6 +63,10 @@ func Run(authLogOverride string, st *state.AppState, done <-chan struct{}) {
 				}
 			case "OK":
 				st.SSHSessions++
+			case "BYE":
+				if st.SSHSessions > 0 {
+					st.SSHSessions--
+				}
 			}
 			st.Unlock()
 		}
