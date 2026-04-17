@@ -86,8 +86,10 @@ type AppState struct {
 	NICRxHist []float64 // last MaxNICHistory rate samples (1s apart)
 	NICTxHist []float64
 
-	BlockedIPs []BlockedIP
-	TopSources []GeoEntry
+	BlockedIPs         []BlockedIP
+	TopSources         []GeoEntry
+	BlockRate          float64 // new unique IPs per minute
+	newBlocksSinceCalc int     // counter reset each minute
 
 	// Source availability — set during probe, shown in panels if false.
 	FirewallAvail bool
@@ -130,6 +132,7 @@ func (s *AppState) AddOrUpdateBlockedIP(b BlockedIP) {
 		}
 	}
 	s.BlockedIPs = append([]BlockedIP{b}, s.BlockedIPs...)
+	s.newBlocksSinceCalc++
 	// Keep list bounded to 500
 	if len(s.BlockedIPs) > 500 {
 		s.BlockedIPs = s.BlockedIPs[:500]
@@ -144,6 +147,13 @@ func (s *AppState) AppendNICHistory(rx, tx float64) {
 	}
 	s.NICRxHist = append(s.NICRxHist, rx)
 	s.NICTxHist = append(s.NICTxHist, tx)
+}
+
+// UpdateBlockRate snapshots newBlocksSinceCalc into BlockRate (blocks/min) and resets the counter.
+// Must be called with the write lock held.
+func (s *AppState) UpdateBlockRate() {
+	s.BlockRate = float64(s.newBlocksSinceCalc)
+	s.newBlocksSinceCalc = 0
 }
 
 // RecalcTopSources recomputes TopSources from the current BlockedIPs list.

@@ -68,6 +68,22 @@ func main() {
 	go nic.Run(cfg.Interface, cfg.PublicIPURL, st, done)
 	go apache.Run(st, done)
 
+	// Block rate: compute new unique IPs per minute on a 60s ticker.
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				st.Lock()
+				st.UpdateBlockRate()
+				st.Unlock()
+			}
+		}
+	}()
+
 	// Geo enrichment: periodically scan BlockedIPs for missing geo data.
 	// Lookups happen outside the lock to avoid blocking the UI render path.
 	go func() {
