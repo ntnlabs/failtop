@@ -318,16 +318,18 @@ func (a *App) drawFooter(g Geometry) {
 // --- Helpers ---
 
 func fmtRate(bps float64) string {
+	var s string
 	switch {
 	case bps >= 1e9:
-		return fmt.Sprintf("%.1fGB/s", bps/1e9)
+		s = fmt.Sprintf("%.1fGB/s", bps/1e9)
 	case bps >= 1e6:
-		return fmt.Sprintf("%.1fMB/s", bps/1e6)
+		s = fmt.Sprintf("%.1fMB/s", bps/1e6)
 	case bps >= 1e3:
-		return fmt.Sprintf("%.1fKB/s", bps/1e3)
+		s = fmt.Sprintf("%.1fKB/s", bps/1e3)
 	default:
-		return fmt.Sprintf("%.0fB/s", bps)
+		s = fmt.Sprintf("%.0fB/s", bps)
 	}
+	return fmt.Sprintf("%9s", s)
 }
 
 func fmtAge(t time.Time) string {
