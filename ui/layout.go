@@ -25,7 +25,7 @@ const (
 	sidebarWidthFrac = 5 // sidebar is 1/5 of total width
 	headerHeight     = 1
 	footerHeight     = 1
-	statsHeight      = 8
+	statsHeight      = 11
 	nicGraphHeight   = 5
 )
 

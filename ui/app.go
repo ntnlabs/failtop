@@ -212,7 +212,6 @@ func (a *App) drawStats(g Geometry) {
 		fmt.Sprintf(" F2B banned:%d", f2b.TotalBanned),
 		fmt.Sprintf(" SSH fails: %d", a.st.SSHFails),
 		fmt.Sprintf(" Sessions:  %d", a.st.SSHSessions),
-		"",
 		fmt.Sprintf(" New IPs:   %.0f/min", a.st.BlockRate),
 	}
 	for i, line := range lines {
