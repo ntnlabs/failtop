@@ -122,11 +122,11 @@ func (s *AppState) AddAuthEvent(e AuthEvent) {
 	s.AuthEvents = append(s.AuthEvents, e)
 }
 
-// AddOrUpdateBlockedIP adds a new BlockedIP or updates SeenAt if IP already exists.
+// AddOrUpdateBlockedIP adds a new BlockedIP or updates source if IP already exists.
+// SeenAt is never updated — it always reflects the first time the IP was seen.
 func (s *AppState) AddOrUpdateBlockedIP(b BlockedIP) {
 	for i, existing := range s.BlockedIPs {
 		if existing.IP == b.IP {
-			s.BlockedIPs[i].SeenAt = b.SeenAt
 			if b.Source != "" {
 				s.BlockedIPs[i].Source = b.Source
 			}
