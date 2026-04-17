@@ -133,12 +133,14 @@ func (s *AppState) AddOrUpdateBlockedIP(b BlockedIP) {
 			return
 		}
 	}
-	if firstSeen, seen := s.seenIPs[b.IP]; !seen {
-		s.seenIPs[b.IP] = b.SeenAt
-		s.newBlocksSinceCalc++
-	} else {
-		b.SeenAt = firstSeen // restore original first-seen time for evicted IPs
+	if firstSeen, seen := s.seenIPs[b.IP]; seen {
+		// Already seen before — was evicted from the display cap.
+		// Don't re-add to avoid constant list churn from bulk sources like fail2ban.
+		_ = firstSeen
+		return
 	}
+	s.seenIPs[b.IP] = b.SeenAt
+	s.newBlocksSinceCalc++
 	s.BlockedIPs = append([]BlockedIP{b}, s.BlockedIPs...)
 	// Keep list bounded to 500
 	if len(s.BlockedIPs) > 500 {
