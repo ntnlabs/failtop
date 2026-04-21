@@ -281,9 +281,10 @@ func (a *App) drawAuthLog(g Geometry) {
 	}
 	widgets.Box(a.screen, r.X, r.Y, r.W, r.H, "EVENTS", evBoxStyle)
 
-	// Rebuild scroll text from current auth events
+	// Rebuild scroll text from current auth events, newest first
 	a.authLog.Lines = a.authLog.Lines[:0]
-	for _, ev := range a.st.AuthEvents {
+	for i := len(a.st.AuthEvents) - 1; i >= 0; i-- {
+		ev := a.st.AuthEvents[i]
 		var style tcell.Style
 		switch ev.Type {
 		case "FAIL", "INVALID":

@@ -4,10 +4,11 @@ package widgets
 import "github.com/gdamore/tcell/v2"
 
 // ScrollText is a fixed-capacity log viewer with scroll support.
+// Lines are stored newest-first (index 0 = newest). Scroll=0 shows the top (newest).
 type ScrollText struct {
 	Lines  []StyledLine
 	MaxLen int
-	Scroll int // lines from bottom; 0 = newest, higher = older
+	Scroll int // offset from top; 0 = newest, higher = older
 }
 
 // StyledLine is a line with a tcell style.
@@ -24,9 +25,16 @@ func (st *ScrollText) Append(text string, style tcell.Style) {
 	st.Lines = append(st.Lines, StyledLine{Text: text, Style: style})
 }
 
-// ScrollUp scrolls toward older content.
+// ScrollUp scrolls toward newer content (toward top).
 func (st *ScrollText) ScrollUp(visibleRows int) {
-	max := len(st.Lines) - visibleRows
+	if st.Scroll > 0 {
+		st.Scroll--
+	}
+}
+
+// ScrollDown scrolls toward older content (toward bottom).
+func (st *ScrollText) ScrollDown() {
+	max := len(st.Lines) - 1
 	if max < 0 {
 		max = 0
 	}
@@ -35,25 +43,16 @@ func (st *ScrollText) ScrollUp(visibleRows int) {
 	}
 }
 
-// ScrollDown scrolls toward newer content.
-func (st *ScrollText) ScrollDown() {
-	if st.Scroll > 0 {
-		st.Scroll--
-	}
-}
-
-// ScrollToTop scrolls to the oldest content.
+// ScrollToTop scrolls to newest content (top).
 func (st *ScrollText) ScrollToTop(visibleRows int) {
-	max := len(st.Lines) - visibleRows
-	if max < 0 {
-		max = 0
-	}
-	st.Scroll = max
+	st.Scroll = 0
 }
 
-// ScrollToBottom scrolls to the newest content.
+// ScrollToBottom scrolls to oldest content (bottom).
 func (st *ScrollText) ScrollToBottom() {
-	st.Scroll = 0
+	if len(st.Lines) > 0 {
+		st.Scroll = len(st.Lines) - 1
+	}
 }
 
 // Draw renders visible lines into the inner area of the box at (x,y,w,h).
@@ -63,13 +62,10 @@ func (st *ScrollText) Draw(s tcell.Screen, x, y, w, h int) {
 	innerW := w - 2
 	innerH := h - 2
 
-	end := len(st.Lines) - st.Scroll
-	if end < 0 {
-		end = 0
-	}
-	start := end - innerH
-	if start < 0 {
-		start = 0
+	start := st.Scroll
+	end := start + innerH
+	if end > len(st.Lines) {
+		end = len(st.Lines)
 	}
 	visible := st.Lines[start:end]
 
